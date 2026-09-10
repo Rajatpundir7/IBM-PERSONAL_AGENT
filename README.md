@@ -3,7 +3,7 @@
 > **Problem Statement #12 · Agentic AI for Personalized Course Pathways**  
 > Built with IBM watsonx.ai (Mistral 24B) · Next.js 14 · Desi Cyberpunk 🤖🇮🇳
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-ibmpersonagent.vercel.app-black?style=for-the-badge&logo=vercel)](https://ibmpersonagent.vercel.app/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-ibmpersonagent--gamma.vercel.app-black?style=for-the-badge&logo=vercel)](https://ibmpersonagent-gamma.vercel.app/)
 [![GitHub](https://img.shields.io/badge/GitHub-IBM--PERSONAL__AGENT-181717?style=for-the-badge&logo=github)](https://github.com/Rajatpundir7/IBM-PERSONAL_AGENT)
 [![Powered by watsonx.ai](https://img.shields.io/badge/Powered%20by-IBM%20watsonx.ai-0F62FE?style=for-the-badge&logo=ibm)](https://eu-gb.ml.cloud.ibm.com)
 
