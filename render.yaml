@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: learnmate-ai
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: IBM_WATSONX_API_KEY
+        sync: false
+      - key: IBM_PROJECT_ID
+        value: bd20be8b-bbee-4a91-a1c7-4aaf7f995879
+      - key: NODE_ENV
+        value: production
+    healthCheckPath: /
