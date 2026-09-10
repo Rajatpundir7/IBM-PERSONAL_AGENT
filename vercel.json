@@ -1,15 +1,5 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next"
-    }
-  ],
-  "env": {
-    "IBM_WATSONX_API_KEY": "@ibm_watsonx_api_key",
-    "IBM_PROJECT_ID": "@ibm_project_id"
-  },
   "headers": [
     {
       "source": "/api/(.*)",
