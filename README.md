@@ -65,6 +65,7 @@ The AI mentor speaks **Hinglish**, understands your skill level, and adapts the 
 │  iam.cloud.ibm  │     │  Project: bd20be8b-...        │
 └─────────────────┘     └─────────────────────────────-─┘
 ```
+![Uploading img_1789123405265.png…]()
 
 **Key design decisions:**
 - The IBM API key is **never sent to the browser** — all inference calls go through the Next.js API route
