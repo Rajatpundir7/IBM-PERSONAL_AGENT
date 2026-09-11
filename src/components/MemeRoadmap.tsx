@@ -1,11 +1,13 @@
 "use client";
 import React, { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertTriangle, Plus, RefreshCw, CheckCircle2, Circle, Lock } from "lucide-react";
-import clsx from "clsx";
+import {
+  CheckCircle2, Circle, Lock, ChevronDown, ChevronUp,
+  AlertCircle, RefreshCw, CheckCheck, BookOpen, Layers, Zap
+} from "lucide-react";
+import { cn, Button, Badge, Card, CardContent, CardHeader, CardTitle, CardDescription, Progress } from "./ui";
 import type { WizardResult } from "./DesiWizard";
 
-// ── Types ──────────────────────────────────────────────────────────────────
 type NodeStatus = "completed" | "active" | "locked" | "remediation";
 
 interface RoadmapNode {
@@ -13,246 +15,198 @@ interface RoadmapNode {
   title: string;
   subtitle: string;
   topics: string[];
-  coach: string;
-  coachEmoji: string;
+  mentor: string;
+  mentorEmoji: string;
   status: NodeStatus;
   isRemediation?: boolean;
-  daysEstimate: number;
+  days: number;
+  resources?: { label: string; type: "video" | "article" | "practice" }[];
 }
 
 interface Phase {
   id: string;
-  label: string;
-  emoji: string;
-  tagline: string;
+  phase: string;
+  title: string;
+  desc: string;
   color: string;
+  bgColor: string;
+  borderColor: string;
+  icon: React.ReactNode;
   nodes: RoadmapNode[];
 }
 
-// ── Roadmap factory ────────────────────────────────────────────────────────
 function buildRoadmap(result: WizardResult): Phase[] {
-  const isAdvanced = result.score === 3;
-  const isBeginner = result.score === 0;
   const speed = result.weeklyHours >= 25 ? 0.65 : result.weeklyHours >= 15 ? 1 : 1.4;
+  const isBeginner = result.score === 0;
+  const isAdvanced = result.score === 3;
 
   return [
     {
-      id: "phase1",
-      label: "Phase 1",
-      emoji: "🍵",
-      tagline: "Chai-Samosa Foundations",
-      color: "#FF9933",
+      id: "p1", phase: "Phase 1", title: "Foundations",
+      desc: "Core data structures, algorithms, and computer science fundamentals.",
+      color: "text-blue-600 dark:text-blue-400",
+      bgColor: "bg-blue-500/8",
+      borderColor: "border-blue-500/20",
+      icon: <BookOpen className="w-4 h-4" />,
       nodes: [
         {
-          id: "p1n1",
-          title: "Arrays & Strings Bootcamp",
-          subtitle: "Sliding window, two-pointer, prefix sums",
-          topics: ["Two-pointer", "Sliding Window", "Prefix Sum", "Binary Search"],
-          coach: "Jeetu Bhaiya",
-          coachEmoji: "🎓",
-          status: "completed",
-          daysEstimate: Math.round(7 * speed),
+          id: "p1n1", title: "Arrays, Strings & Hashing", subtitle: "Two-pointer, sliding window, prefix sums",
+          topics: ["Two-pointer technique", "Sliding window", "Prefix sum arrays", "HashMap patterns", "Binary search variants"],
+          mentor: "Core Algorithms", mentorEmoji: "📐",
+          status: "completed", days: Math.round(7 * speed),
+          resources: [{ label: "NeetCode 150 – Arrays", type: "practice" }, { label: "MIT 6.006 Lecture 1", type: "video" }],
         },
         {
-          id: "p1n2",
-          title: "Recursion & Backtracking",
-          subtitle: "Sub-sets, permutations, N-Queens",
-          topics: ["Tree Recursion", "Memoization", "Backtracking", "Call Stack"],
-          coach: "Rancho",
-          coachEmoji: "💡",
-          status: isAdvanced ? "completed" : "active",
-          daysEstimate: Math.round(10 * speed),
+          id: "p1n2", title: "Recursion & Dynamic Programming", subtitle: "Memoisation, tabulation, space optimisation",
+          topics: ["Tree recursion", "Memoisation", "Bottom-up DP", "Knapsack variants", "LCS / LIS"],
+          mentor: "Core Algorithms", mentorEmoji: "📐",
+          status: isAdvanced ? "completed" : "active", days: Math.round(12 * speed),
+          resources: [{ label: "DP Patterns – Leetcode", type: "practice" }, { label: "Striver DP Playlist", type: "video" }],
         },
-        ...(isBeginner
-          ? [
-              {
-                id: "p1n3_remediation",
-                title: "Babu Rao's Basics Capsule",
-                subtitle: "Big-O, pointers, memory model",
-                topics: ["Time Complexity", "Space Complexity", "Pointers", "Stack vs Heap"],
-                coach: "Babu Rao",
-                coachEmoji: "😅",
-                status: "active" as NodeStatus,
-                isRemediation: true,
-                daysEstimate: Math.round(5 * speed),
-              },
-            ]
-          : []),
+        ...(isBeginner ? [{
+          id: "p1n_rem", title: "Foundations Remediation", subtitle: "Big-O, memory model, call stack",
+          topics: ["Time complexity", "Space complexity", "Stack vs heap", "Pointer arithmetic"],
+          mentor: "Foundations", mentorEmoji: "🔧",
+          status: "active" as NodeStatus, isRemediation: true, days: Math.round(4 * speed),
+          resources: [{ label: "CS50 Week 0–1", type: "video" as const }],
+        }] : []),
         {
-          id: "p1n4",
-          title: "Networking & OS Fundamentals",
-          subtitle: "TCP/IP, virtual memory, processes",
-          topics: ["TCP vs UDP", "HTTP/2", "Virtual Memory", "Threads vs Processes"],
-          coach: "Rancho",
-          coachEmoji: "💡",
-          status: "locked",
-          daysEstimate: Math.round(8 * speed),
+          id: "p1n3", title: "Trees, Graphs & BFS/DFS", subtitle: "Traversals, shortest paths, Union-Find, Trie",
+          topics: ["BFS & DFS", "Dijkstra", "Bellman-Ford", "Union-Find", "Trie / prefix tree", "Topological sort"],
+          mentor: "Core Algorithms", mentorEmoji: "📐",
+          status: "locked", days: Math.round(14 * speed),
+        },
+        {
+          id: "p1n4", title: "OS & Networking Fundamentals", subtitle: "Processes, TCP/IP, virtual memory, concurrency",
+          topics: ["Processes vs threads", "TCP vs UDP", "HTTP/2 & HTTP/3", "Virtual memory", "Mutex & semaphores"],
+          mentor: "Systems", mentorEmoji: "⚙️",
+          status: "locked", days: Math.round(8 * speed),
         },
       ],
     },
     {
-      id: "phase2",
-      label: "Phase 2",
-      emoji: "💼",
-      tagline: "Intern se SDE-1",
-      color: "#0F62FE",
+      id: "p2", phase: "Phase 2", title: "Engineering",
+      desc: "Database internals, distributed messaging, low-level design patterns.",
+      color: "text-violet-600 dark:text-violet-400",
+      bgColor: "bg-violet-500/8",
+      borderColor: "border-violet-500/20",
+      icon: <Layers className="w-4 h-4" />,
       nodes: [
         {
-          id: "p2n1",
-          title: "Trees & Graphs Masterclass",
-          subtitle: "BFS/DFS, Dijkstra, Union-Find, Trie",
-          topics: ["BFS/DFS", "Dijkstra", "Bellman-Ford", "Union-Find", "Trie"],
-          coach: "Rancho",
-          coachEmoji: "💡",
-          status: "locked",
-          daysEstimate: Math.round(14 * speed),
+          id: "p2n1", title: "Database Design & Indexing", subtitle: "B-Trees, query optimisation, transactions",
+          topics: ["B-Tree indexes", "Query planner", "ACID properties", "Normalisation", "Sharding strategies"],
+          mentor: "Data Engineering", mentorEmoji: "🗄️",
+          status: "locked", days: Math.round(10 * speed),
         },
         {
-          id: "p2n2",
-          title: "Database Design & Indexing",
-          subtitle: "B-Trees, query optimization, sharding basics",
-          topics: ["B-Tree Index", "Query Planner", "Normalization", "Sharding 101"],
-          coach: "Chatur",
-          coachEmoji: "📊",
-          status: "locked",
-          daysEstimate: Math.round(10 * speed),
+          id: "p2n2", title: "Kafka & Event-Driven Architecture", subtitle: "Partitions, consumer groups, stream processing",
+          topics: ["Kafka partitions", "Consumer groups", "Exactly-once semantics", "Schema Registry", "Kafka Streams"],
+          mentor: "Distributed Systems", mentorEmoji: "📡",
+          status: "locked", days: Math.round(10 * speed),
         },
         {
-          id: "p2n3",
-          title: "Kafka & Redis Caching",
-          subtitle: "Event streaming, pub/sub, cache eviction",
-          topics: ["Kafka Partitions", "Consumer Groups", "Redis TTL", "Cache Aside Pattern"],
-          coach: "Gaitonde",
-          coachEmoji: "😎",
-          status: "locked",
-          daysEstimate: Math.round(12 * speed),
+          id: "p2n3", title: "Redis & Caching Strategies", subtitle: "Cache-aside, write-through, eviction policies",
+          topics: ["Cache-aside pattern", "Write-through / write-back", "LRU eviction", "Redis data types", "Rate limiting"],
+          mentor: "Infrastructure", mentorEmoji: "⚡",
+          status: "locked", days: Math.round(7 * speed),
         },
         {
-          id: "p2n4",
-          title: "Low-Level Design (LLD) Sprint",
-          subtitle: "SOLID, design patterns, object modelling",
-          topics: ["SOLID", "Factory", "Observer", "Strategy", "OOP Pillars"],
-          coach: "Rancho",
-          coachEmoji: "💡",
-          status: "locked",
-          daysEstimate: Math.round(10 * speed),
+          id: "p2n4", title: "Low-Level Design (SOLID & Patterns)", subtitle: "SOLID, GoF patterns, object modelling",
+          topics: ["SOLID principles", "Factory / Abstract Factory", "Observer pattern", "Strategy pattern", "Repository pattern"],
+          mentor: "Software Design", mentorEmoji: "🏗️",
+          status: "locked", days: Math.round(10 * speed),
         },
       ],
     },
     {
-      id: "phase3",
-      label: "Phase 3",
-      emoji: "🚀",
-      tagline: "Apun Hi Bhagwan Hai — Scale",
-      color: "#00FF66",
+      id: "p3", phase: "Phase 3", title: "Scale",
+      desc: "High-level system design, distributed consensus, and interview mastery.",
+      color: "text-emerald-600 dark:text-emerald-400",
+      bgColor: "bg-emerald-500/8",
+      borderColor: "border-emerald-500/20",
+      icon: <Zap className="w-4 h-4" />,
       nodes: [
         {
-          id: "p3n1",
-          title: "High-Level System Design",
-          subtitle: "URL shortener → Twitter → WhatsApp",
-          topics: ["Consistent Hashing", "CAP Theorem", "CDN", "Load Balancing"],
-          coach: "Gaitonde",
-          coachEmoji: "😎",
-          status: "locked",
-          daysEstimate: Math.round(14 * speed),
+          id: "p3n1", title: "High-Level System Design", subtitle: "URL shortener → social graph → video streaming",
+          topics: ["Consistent hashing", "CAP theorem", "CDN architecture", "Load balancing", "API gateways"],
+          mentor: "System Design", mentorEmoji: "🏛️",
+          status: "locked", days: Math.round(14 * speed),
+          resources: [{ label: "System Design Interview Vol. 1", type: "article" }],
         },
         {
-          id: "p3n2",
-          title: "Raft Consensus & Distributed Txns",
-          subtitle: "Leader election, 2PC, distributed locks",
-          topics: ["Raft Log", "2-Phase Commit", "Paxos concepts", "ZooKeeper"],
-          coach: "Rancho",
-          coachEmoji: "💡",
-          status: "locked",
-          daysEstimate: Math.round(12 * speed),
+          id: "p3n2", title: "Consensus & Distributed Transactions", subtitle: "Raft, 2PC, distributed locks",
+          topics: ["Raft log replication", "Leader election", "2-Phase commit", "Distributed locks (Redlock)", "ZooKeeper"],
+          mentor: "Distributed Systems", mentorEmoji: "📡",
+          status: "locked", days: Math.round(12 * speed),
         },
         {
-          id: "p3n3",
-          title: "MNC Interview Capstone",
-          subtitle: "Mock loops, system design reviews, HR mastery",
-          topics: ["STAR Stories", "L5/SDE-2 Rubric", "Offer Negotiation", "Post-Offer Checklist"],
-          coach: "Gaitonde",
-          coachEmoji: "😎",
-          status: "locked",
-          daysEstimate: Math.round(10 * speed),
+          id: "p3n3", title: "Interview Preparation Capstone", subtitle: "Mock loops, behavioural prep, offer negotiation",
+          topics: ["STAR method stories", "SDE-2 / L5 rubric", "Mock system design", "Compensation negotiation", "Competing offers"],
+          mentor: "Career Strategy", mentorEmoji: "🎯",
+          status: "locked", days: Math.round(10 * speed),
         },
       ],
     },
   ];
 }
 
-// ── Node Card ──────────────────────────────────────────────────────────────
-function NodeCard({
-  node,
-  phaseColor,
-  index,
-}: {
-  node: RoadmapNode;
-  phaseColor: string;
-  index: number;
+// ── Node card ─────────────────────────────────────────────────────────────
+function NodeCard({ node, phaseColor, phaseBg, phaseBorder }: {
+  node: RoadmapNode; phaseColor: string; phaseBg: string; phaseBorder: string
 }) {
   const [open, setOpen] = useState(false);
 
-  const statusIcon =
-    node.status === "completed" ? (
-      <CheckCircle2 size={16} className="text-[#00FF66]" />
-    ) : node.status === "active" ? (
-      <motion.div
-        animate={{ scale: [1, 1.15, 1] }}
-        transition={{ repeat: Infinity, duration: 1.6 }}
-      >
-        <Circle size={16} style={{ color: phaseColor }} />
+  const statusEl =
+    node.status === "completed" ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> :
+    node.status === "active" ? (
+      <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1.8 }}>
+        <Circle className={cn("w-4 h-4", phaseColor)} />
       </motion.div>
-    ) : (
-      <Lock size={14} className="text-[#64748B]" />
-    );
+    ) : <Lock className="w-3.5 h-3.5 text-muted-foreground/50" />;
+
+  const typeColor = (t: string) =>
+    t === "video" ? "bg-red-500/10 text-red-500" :
+    t === "practice" ? "bg-green-500/10 text-green-600 dark:text-green-400" :
+    "bg-blue-500/10 text-blue-500";
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.08 }}
-      className={clsx(
-        "card cursor-pointer select-none transition-all duration-200",
-        node.isRemediation &&
-          "border-yellow-600/40 bg-[rgba(234,179,8,0.04)]",
-        node.status === "active" && "border-opacity-60",
-        node.status === "locked" && "opacity-50"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
+      className={cn(
+        "rounded-xl border transition-all duration-200",
+        node.isRemediation ? "border-amber-500/30 bg-amber-500/5" :
+        node.status === "active" ? cn("border-border", phaseBorder, phaseBg) :
+        node.status === "completed" ? "border-border bg-card" :
+        "border-border/50 bg-card/50 opacity-60"
       )}
-      style={
-        node.status === "active"
-          ? { borderColor: phaseColor + "66" }
-          : undefined
-      }
-      onClick={() => node.status !== "locked" && setOpen((o) => !o)}
     >
-      <div className="flex items-start gap-3">
-        <div className="mt-0.5 flex-shrink-0">{statusIcon}</div>
+      <button
+        onClick={() => node.status !== "locked" && setOpen((o) => !o)}
+        disabled={node.status === "locked"}
+        className="w-full text-left p-4 flex items-start gap-3 focus-visible:outline-none"
+      >
+        <div className="mt-0.5 flex-shrink-0">{statusEl}</div>
         <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-2 mb-1">
-            <span className="font-semibold text-sm text-[#E2E8F0]">
-              {node.title}
-            </span>
-            {node.isRemediation && (
-              <span className="badge-saffron">Remediation</span>
-            )}
-            {node.status === "active" && (
-              <span className="badge-green">In Progress</span>
-            )}
+          <div className="flex flex-wrap items-center gap-2 mb-0.5">
+            <span className="text-sm font-semibold text-foreground">{node.title}</span>
+            {node.isRemediation && <Badge variant="warning" className="text-[10px]">Remediation</Badge>}
+            {node.status === "active" && !node.isRemediation && <Badge variant="success" className="text-[10px]">In Progress</Badge>}
+            {node.status === "completed" && <Badge variant="outline" className="text-[10px]">Completed</Badge>}
           </div>
-          <p className="text-xs text-[#64748B]">{node.subtitle}</p>
+          <p className="text-xs text-muted-foreground">{node.subtitle}</p>
         </div>
-        <div className="flex items-center gap-1 text-xs text-[#64748B] flex-shrink-0">
-          <span>{node.coachEmoji}</span>
-          <span className="hidden sm:inline">{node.coach}</span>
-          <span className="ml-2 font-mono" style={{ color: phaseColor + "CC" }}>
-            {node.daysEstimate}d
-          </span>
+        <div className="flex items-center gap-3 flex-shrink-0 ml-2">
+          <span className="text-xs text-muted-foreground font-mono hidden sm:block">{node.days}d</span>
+          {node.status !== "locked" && (
+            open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />
+          )}
         </div>
-      </div>
+      </button>
 
       <AnimatePresence>
-        {open && (
+        {open && node.status !== "locked" && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -260,20 +214,27 @@ function NodeCard({
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="mt-4 pt-4 border-t border-[#1E2A3D]">
-              <p className="text-xs text-[#64748B] mb-2 font-semibold uppercase tracking-wider">
-                Topics covered
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {node.topics.map((t) => (
-                  <span
-                    key={t}
-                    className="text-xs font-mono px-2 py-0.5 rounded bg-[#111827] border border-[#1E2A3D] text-[#94A3B8]"
-                  >
-                    {t}
-                  </span>
-                ))}
+            <div className="px-4 pb-4 space-y-3 border-t border-border pt-3">
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Topics</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {node.topics.map((t) => (
+                    <span key={t} className="text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground font-mono">{t}</span>
+                  ))}
+                </div>
               </div>
+              {node.resources && node.resources.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Resources</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {node.resources.map((r) => (
+                      <span key={r.label} className={cn("text-xs px-2 py-0.5 rounded-md font-medium", typeColor(r.type))}>
+                        {r.label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </motion.div>
         )}
@@ -282,228 +243,161 @@ function NodeCard({
   );
 }
 
-// ── Phase Block ────────────────────────────────────────────────────────────
-function PhaseBlock({ phase }: { phase: Phase }) {
-  return (
-    <div className="mb-10">
-      <div className="flex items-center gap-3 mb-4">
-        <span className="text-2xl">{phase.emoji}</span>
-        <div>
-          <span
-            className="text-xs font-bold uppercase tracking-widest"
-            style={{ color: phase.color }}
-          >
-            {phase.label}
-          </span>
-          <h3 className="text-lg font-bold text-[#E2E8F0]">
-            {phase.tagline}
-          </h3>
-        </div>
-      </div>
-
-      {/* vertical connector + nodes */}
-      <div className="ml-3 pl-6 border-l-2" style={{ borderColor: phase.color + "40" }}>
-        <div className="space-y-3">
-          {phase.nodes.map((node, i) => (
-            <NodeCard
-              key={node.id}
-              node={node}
-              phaseColor={phase.color}
-              index={i}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Difficulty Simulation ──────────────────────────────────────────────────
-function RemediationBanner({
-  loading,
-  inserted,
-  onClick,
-}: {
-  loading: boolean;
-  inserted: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <div className="card border-yellow-600/30 bg-[rgba(234,179,8,0.04)] flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8">
-      <AlertTriangle size={20} className="text-yellow-500 flex-shrink-0" />
-      <div className="flex-1">
-        <p className="text-sm font-semibold text-[#E2E8F0]">
-          Simulate a Knowledge Gap
-        </p>
-        <p className="text-xs text-[#64748B] mt-0.5">
-          Babu Rao will inject a 3-day prerequisite remediation node and recalibrate your timeline via Mistral 24B.
-        </p>
-      </div>
-      <button
-        onClick={onClick}
-        disabled={loading || inserted}
-        className={clsx(
-          "btn-outline flex items-center gap-2 flex-shrink-0 text-sm",
-          inserted && "border-[#00FF66] text-[#00FF66]",
-          loading && "opacity-60 cursor-not-allowed"
-        )}
-      >
-        {loading ? (
-          <RefreshCw size={14} className="animate-spin" />
-        ) : inserted ? (
-          <CheckCircle2 size={14} />
-        ) : (
-          <Plus size={14} />
-        )}
-        {inserted
-          ? "Node Injected!"
-          : loading
-          ? "Calling Mistral…"
-          : "Bhai Samajh Nahi Aaya! (Simulate Difficulty)"}
-      </button>
-    </div>
-  );
-}
-
-// ── Main Component ─────────────────────────────────────────────────────────
-interface MemeRoadmapProps {
-  wizardResult: WizardResult;
-}
-
-export default function MemeRoadmap({ wizardResult }: MemeRoadmapProps) {
-  const [phases, setPhases] = useState<Phase[]>(() =>
-    buildRoadmap(wizardResult)
-  );
+// ── Main component ─────────────────────────────────────────────────────────
+export default function MemeRoadmap({ wizardResult }: { wizardResult: WizardResult }) {
+  const [phases, setPhases] = useState<Phase[]>(() => buildRoadmap(wizardResult));
   const [loading, setLoading] = useState(false);
-  const [remediationInserted, setRemediationInserted] = useState(false);
+  const [remInserted, setRemInserted] = useState(false);
   const [aiNote, setAiNote] = useState<string | null>(null);
 
-  const totalDays = phases.flatMap((p) => p.nodes).reduce(
-    (acc, n) => acc + n.daysEstimate,
-    0
-  );
+  const totalDays = phases.flatMap((p) => p.nodes).reduce((a, n) => a + n.days, 0);
+  const completedNodes = phases.flatMap((p) => p.nodes).filter((n) => n.status === "completed").length;
+  const totalNodes = phases.flatMap((p) => p.nodes).length;
+  const progressPct = Math.round((completedNodes / totalNodes) * 100);
 
   const handleDifficulty = useCallback(async () => {
     setLoading(true);
-    setAiNote(null);
     try {
-      const prompt = `You are Babu Rao, a quirky but helpful tech mentor from Hera Pheri. 
-A student is learning "${wizardResult.role.label}" and hit a knowledge gap in Phase 1 recursion topics.
-In 2-3 sentences of witty Hinglish, explain what 3-day prerequisite remediation plan you are injecting into their roadmap (cover: Big-O analysis, Call Stack visualisation, and simple recursion drills). 
-End with an encouraging one-liner.`;
-
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, max_new_tokens: 200 }),
+        body: JSON.stringify({
+          prompt: `You are a professional software engineering mentor. A student targeting "${wizardResult.role.label}" has hit a knowledge gap in recursion fundamentals. In 2 concise sentences, describe a targeted 3-day remediation plan covering: Big-O analysis, call stack visualisation, and simple recursion drills. Be direct and practical.`,
+          max_new_tokens: 150,
+        }),
       });
       const data = await res.json();
-      setAiNote(data.text ?? null);
+      setAiNote(data.text?.trim() ?? null);
     } catch {
-      setAiNote("Babu Rao abhi busy hai… but remediation node inject ho gaya!");
+      setAiNote("Remediation plan: Review Big-O complexity, trace call stacks manually for 5 recursion problems, then complete 10 LeetCode Easy recursion problems with full memoisation.");
     } finally {
       setLoading(false);
     }
 
-    // Inject remediation node into Phase 1
-    setPhases((prev) =>
-      prev.map((phase) => {
-        if (phase.id !== "phase1") return phase;
-        const already = phase.nodes.find((n) => n.id === "remediation_injected");
-        if (already) return phase;
-        const newNode: RoadmapNode = {
-          id: "remediation_injected",
-          title: "Babu Rao's Doubt Clearing Session",
-          subtitle: "Emergency 3-day prerequisite capsule — injected by AI",
-          topics: ["Big-O Drills", "Call Stack Viz", "Simple Recursion", "Complexity Tables"],
-          coach: "Babu Rao",
-          coachEmoji: "😅",
-          status: "active",
-          isRemediation: true,
-          daysEstimate: 3,
-        };
-        const insertAt = 1; // after first node
-        return {
-          ...phase,
-          nodes: [
-            ...phase.nodes.slice(0, insertAt),
-            newNode,
-            ...phase.nodes.slice(insertAt),
-          ],
-        };
-      })
-    );
-    setRemediationInserted(true);
+    setPhases((prev) => prev.map((ph) => {
+      if (ph.id !== "p1") return ph;
+      if (ph.nodes.some((n) => n.id === "rem_injected")) return ph;
+      const rem: RoadmapNode = {
+        id: "rem_injected", title: "Prerequisite Remediation Session",
+        subtitle: "3-day targeted gap-fill — AI-generated plan",
+        topics: ["Big-O mastery", "Call stack tracing", "Simple recursion drills", "Complexity tables"],
+        mentor: "AI Mentor", mentorEmoji: "🤖",
+        status: "active", isRemediation: true, days: 3,
+      };
+      return { ...ph, nodes: [ph.nodes[0], rem, ...ph.nodes.slice(1)] };
+    }));
+    setRemInserted(true);
   }, [wizardResult.role.label]);
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto space-y-8">
       {/* Header */}
-      <div className="mb-2">
-        <span className="badge-ibm">Adaptive Roadmap</span>
+      <div>
+        <div className="flex flex-wrap items-center gap-2 mb-3">
+          <Badge variant="default">{wizardResult.role.icon} {wizardResult.role.label}</Badge>
+          <Badge variant="outline">Score {wizardResult.score}/3</Badge>
+          <Badge variant="outline">{wizardResult.weeklyHours} hrs/week</Badge>
+        </div>
+        <h2 className="text-2xl font-bold text-foreground mb-1">Your Learning Pathway</h2>
+        <p className="text-sm text-muted-foreground">
+          Estimated duration: <span className="text-foreground font-medium">{totalDays} days</span> · {totalNodes} modules across 3 phases
+        </p>
       </div>
-      <h2 className="text-2xl font-bold text-[#E2E8F0] mb-1">
-        Your Desi SDE Pathway
-      </h2>
-      <p className="text-sm text-[#64748B] mb-6">
-        Role:{" "}
-        <span className="text-[#FF9933] font-medium">
-          {wizardResult.role.emoji} {wizardResult.role.label}
-        </span>{" "}
-        · Score:{" "}
-        <span className="text-[#E2E8F0] font-medium">{wizardResult.score}/3</span>{" "}
-        · Commitment:{" "}
-        <span className="text-[#E2E8F0] font-medium">
-          {wizardResult.weeklyHours} hrs/week
-        </span>{" "}
-        · Est. total:{" "}
-        <span className="text-[#00FF66] font-semibold">{totalDays} days</span>
-      </p>
 
-      {/* Simulate difficulty banner */}
-      <RemediationBanner
-        loading={loading}
-        inserted={remediationInserted}
-        onClick={handleDifficulty}
-      />
+      {/* Overall progress */}
+      <Card>
+        <CardContent className="pt-5 pb-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-foreground">Overall Progress</span>
+            <span className="text-sm font-semibold text-primary">{progressPct}%</span>
+          </div>
+          <Progress value={progressPct} className="h-2" />
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-xs text-muted-foreground">{completedNodes} of {totalNodes} modules completed</span>
+            <span className="text-xs text-muted-foreground">{totalDays - phases.flatMap(p=>p.nodes).filter(n=>n.status==="completed").reduce((a,n)=>a+n.days,0)} days remaining</span>
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* AI note from Babu Rao */}
-      <AnimatePresence>
-        {aiNote && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="card border-yellow-600/30 bg-[rgba(234,179,8,0.05)] mb-8"
-          >
-            <div className="flex items-start gap-3">
-              <span className="text-2xl">😅</span>
-              <div>
-                <p className="text-xs font-bold text-yellow-500 mb-1 uppercase tracking-wider">
-                  Babu Rao says:
-                </p>
-                <p className="text-sm text-[#94A3B8] italic leading-relaxed">
-                  {aiNote}
-                </p>
+      {/* Adaptive difficulty banner */}
+      <Card className={cn("border-dashed", remInserted ? "border-emerald-500/40" : "border-amber-500/30")}>
+        <CardContent className="pt-5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <AlertCircle className="w-4 h-4 text-amber-500" />
+                <p className="text-sm font-semibold text-foreground">Adaptive Difficulty Engine</p>
               </div>
+              <p className="text-xs text-muted-foreground">
+                Simulate a knowledge gap. The AI will analyse your weak areas and inject a targeted remediation module into your roadmap.
+              </p>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDifficulty}
+              disabled={loading || remInserted}
+              className={cn("flex-shrink-0", remInserted && "border-emerald-500/40 text-emerald-600 dark:text-emerald-400")}
+            >
+              {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> :
+               remInserted ? <CheckCheck className="w-3.5 h-3.5" /> :
+               <Zap className="w-3.5 h-3.5" />}
+              {remInserted ? "Remediation Added" : loading ? "Analysing…" : "Simulate Knowledge Gap"}
+            </Button>
+          </div>
+
+          <AnimatePresence>
+            {aiNote && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="mt-4 pt-4 border-t border-border"
+              >
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">AI Mentor Response</p>
+                <p className="text-sm text-foreground leading-relaxed">{aiNote}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </CardContent>
+      </Card>
 
       {/* Phases */}
       {phases.map((phase) => (
-        <PhaseBlock key={phase.id} phase={phase} />
+        <div key={phase.id}>
+          <div className="flex items-center gap-3 mb-4">
+            <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", phase.bgColor, phase.color)}>
+              {phase.icon}
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-xs">{phase.phase}</Badge>
+                <h3 className="text-base font-semibold text-foreground">{phase.title}</h3>
+              </div>
+              <p className="text-xs text-muted-foreground">{phase.desc}</p>
+            </div>
+          </div>
+
+          <div className="ml-4 pl-6 border-l-2 border-border space-y-3">
+            {phase.nodes.map((node) => (
+              <NodeCard
+                key={node.id}
+                node={node}
+                phaseColor={phase.color}
+                phaseBg={phase.bgColor}
+                phaseBorder={phase.borderColor}
+              />
+            ))}
+          </div>
+        </div>
       ))}
 
-      {/* Footer note */}
-      <div className="card border-[#1E2A3D] bg-[#111827]">
-        <p className="text-xs text-[#64748B] leading-relaxed">
-          💡 <span className="text-[#E2E8F0] font-medium">Click any unlocked node</span> to expand topics. 
-          Roadmap adapts in real-time via IBM watsonx.ai (Mistral 24B). 
-          <span className="text-[#FF9933]"> Consistency &gt; Intensity.</span>
-        </p>
-      </div>
+      <Card className="bg-muted/30">
+        <CardContent className="pt-4 pb-4">
+          <p className="text-xs text-muted-foreground text-center leading-relaxed">
+            Click any unlocked module to expand topics and resources. Your roadmap adapts in real-time via IBM watsonx.ai.
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }
